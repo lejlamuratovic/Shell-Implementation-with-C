@@ -26,6 +26,7 @@ void main_loop();
 
 
 int main(void) {
+
     signal(SIGINT, sigint_handler); // ctrl + c
 
     system("clear");
@@ -33,6 +34,7 @@ int main(void) {
     main_loop();
 
     return 0;
+
 }
 
 
@@ -58,6 +60,7 @@ void prompt() {
 
 
 void main_loop() {
+
   char *cmd[MAX_CMD_LEN];
   char *args[MAX_NUM_ARGUMENTS];
   char input[MAX_CMD_LEN];
@@ -93,6 +96,7 @@ void main_loop() {
 
       // fork the first child to execute the first command
       pid_t pid1 = fork();
+      
       if (pid1 == 0) {
         // redirect the standard output to the write end of the pipe
         close(STDOUT_FILENO);
@@ -103,24 +107,30 @@ void main_loop() {
         // parse the arguments of the first command
         char *token = strtok(pipe_cmds[0], delimiters);
         int i = 0;
+
         while (token != NULL && i < MAX_NUM_ARGUMENTS) {
           args[i] = token;
           token = strtok(NULL, delimiters);
           i++;
         }
+
         args[i] = NULL;
 
+        
         // execute the first command
         execvp(args[0], args);
         perror(args[0]);
         exit(1);
-      } else if (pid1 < 0) {
+      } 
+      
+      else if (pid1 < 0) {
         perror("fork");
         exit(1);
       }
 
       // fork the second child to execute the second command
       pid_t pid2 = fork();
+      
       if (pid2 == 0) {
         // redirect the standard input to the read end of the pipe
         close(STDIN_FILENO);
@@ -136,13 +146,16 @@ void main_loop() {
           token = strtok(NULL, delimiters);
           i++;
         }
+        
         args[i] = NULL;
 
         // execute the second command
         execvp(args[0], args);
         perror(args[0]);
         exit(1);
-      } else if (pid2 < 0) {
+      } 
+      
+      else if (pid2 < 0) {
         perror("fork");
         exit(1);
       }
@@ -159,70 +172,90 @@ void main_loop() {
     // if it doesn't have piping
 
     else {
-
+      
       char *token = strtok(input, delimiters);
       int i = 0;
       while (token != NULL && i < MAX_NUM_ARGUMENTS) {
         args[i] = token;
         token = strtok(NULL, " ");
         i++;
+      
       }
-
+      
       args[i] = NULL;
-
+      
       pid_t pid = fork();
         if (pid == 0) {
 
+
+
           if (strcmp(args[0], "wc") == 0) {
             // check if there is a file passed to wc
-            if ((strcmp(args[0], "wc") == 0 && args[1] == NULL) || (strcmp(args[0], "wc") == 0 && args[1][0] == '-' && args[2] == NULL)){
+            if ((strcmp(args[0], "wc") == 0 && args[1] == NULL) || (strcmp(args[0], "wc") == 0 && args[1][0] == '-' && args[2] == NULL)) {
               printf("Please provide a file name to wc command\n");
-            } else {
+            } 
+            
+            else {
                 execvp("wc", args);
                 perror(args[0]);
                 exit(1);
                 }
           }
 
+
+
           else if (strcmp(args[0], "grep") == 0) {
             // check if there is a pattern and a file passed to grep
             if (args[1] == NULL || args[2] == NULL) {
               printf("Please provide a pattern and file name to grep command\n");
-          } else {
+          } 
+            else {
               execvp("grep", args);
               perror(args[0]);
               exit(1);
             }
           }
 
+
+
           else if (strcmp(args[0], "df") == 0) {
             // df doesn't take any arguments by default, so we don't need to check anything here
-              execvp("df", args);
-              perror(args[0]);
-              exit(1);
+            execvp("df", args);
+            perror(args[0]);
+            exit(1);
           }
 
-            else if (strcmp(args[0], "cmatrix") == 0) {
-                cmatrix(args[1]);
-            }
+
+
+          else if (strcmp(args[0], "cmatrix") == 0) {
+            cmatrix(args[1]);
+          }
+
+
 
           else if (strcmp(args[0], "clear") == 0) {
             //cmatrix doesn't take any arguments by default
             system("clear");
           }
 
+
+
           else {
             // command not implemented
             fprintf(stderr, "%s: command not found\n", args[0]);
           }
 
-        } else if (pid > 0) {
-            waitpid(pid, &status, 0);
 
-        } else {
-            perror("Fork");
-            exit(1);
-            }
-        }
+        } 
+        
+        else if (pid > 0) {
+          waitpid(pid, &status, 0);
+        } 
+        
+        else {
+          perror("Fork");
+          exit(1);
+      } 
     }
+  }
 }

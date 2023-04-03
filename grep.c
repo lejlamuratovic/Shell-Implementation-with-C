@@ -15,16 +15,18 @@
 #define BUFFER_SIZE 4096
 
 void grep(char* pattern, char* filename) {
+    
     char lineBuffer[BUFFER_LENGTH+1];
     FILE *fp = NULL;
     size_t count = 0;
 
     fp = fopen(filename, "r");
+    
     if(!fp) {
         fprintf(stderr, "Error: Unable to open file %s.\n", filename);
         return;
     }
-
+    
     while(fgets(lineBuffer, BUFFER_LENGTH, fp)) {
         if(strstr(lineBuffer, pattern)) {
             count++;
