@@ -1,25 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> //getlogin() && getusername()
-#include <limits.h> //HOST_NAME_MAX
-#include <string.h> //strtok()
-#include <sys/wait.h> //wait()
 #include <ctype.h> //isspace()
-#include <errno.h> //Provides error codes for various system errors
-#include <dirent.h> // Provides functions to access directories and their contents
-#include <sys/ioctl.h> //Provides functions to control I/O operations on devices
-#include <signal.h> // Provides functions to handle signals like SIGINT
-#include <sys/statvfs.h> // Provides functions to get information about file systems like df()
 
 
 void wc_results(int lines, int words, int chars, int bytes,int lineFlag,int wordFlag,int charFlag,int byteFlag, char* filename) {
     
-    printf(" ");
-
-    if (lineFlag==1) {printf("%d\t",lines);};
-    if (wordFlag==1) {printf("%d\t",words);};
-    if (charFlag==1) {printf("%d\t",chars);};
-    if (byteFlag==1) {printf("%d\t ",bytes);};
+    if (lineFlag==1) {printf("Number of lines in the file is: %d\t",lines);};
+    if (wordFlag==1) {printf("Number of words in the file is: %d\t",words);};
+    if (charFlag==1) {printf("Number of characters in the file is: %d\t",chars);};
+    if (byteFlag==1) {printf("Number of lines in the file is: c%d\t ",bytes);};
 
     if(lineFlag == 0 && wordFlag == 0 && charFlag == 0 && byteFlag == 0){
       printf("%d\t%d\t%d\t",lines,words,chars);
@@ -28,7 +17,7 @@ void wc_results(int lines, int words, int chars, int bytes,int lineFlag,int word
     printf("%s\n",filename);
   }
 
-int wc(int argc, char** argv) {
+int my_wc(int argc, char** argv) {
 
     FILE *file;
     int returnValue = 0;
@@ -85,7 +74,8 @@ int wc(int argc, char** argv) {
                         break;
 
                     default:
-                        printf("invalid option -- '%s'\n",argv[i]);
+                        printf("Unknown argument\n");
+                        printf("Available arguments: \n-l: Display the number of lines\n-w: Display the number of words\n-c: Display the number of characters\n-m: Display the number of bytes\n"); 
                         return 1;
                         break;
                 }

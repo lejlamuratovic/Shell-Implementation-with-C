@@ -5,25 +5,36 @@
 #include <string.h> //strtok()
 #include <sys/wait.h> //wait()
 #include <ctype.h> //isspace()
-#include <errno.h> //Provides error codes for various system errors
-#include <dirent.h> // Provides functions to access directories and their contents
-#include <sys/ioctl.h> //Provides functions to control I/O operations on devices
-#include <signal.h> // Provides functions to handle signals like SIGINT
-#include <sys/statvfs.h> // Provides functions to get information about file systems like df()
+#include <errno.h> // error codes for various system errors
+#include <dirent.h> // functions to access directories and their contents
+#include <sys/ioctl.h> // functions to control I/O operations on devices
+#include <signal.h> // functions to handle SIGINT
+#include <sys/statvfs.h> // functions to get information about file systems like df()
+#include <sys/types.h>
+#include <fcntl.h> // for flags in open
 
-#include "wc.c"
-#include "df.c"
-#include "grep.c"
-#include "cmatrix.c"
+
+#include "my_wc.c"
+#include "my_cmatrix.c"
+#include "my_grep.c"
+#include "my_df.c"
 
 #define MAX_CMD_LEN 256
 #define MAX_NUM_ARGUMENTS 16
 #define MAX_LINE_LENGTH 1024
 #define true 1
 
+char delimiters[] = " \t\r\n\v\f"; // declare delimiters as a global variable
+
 void prompt();
 void main_loop();
-
+void check_pipe(char *input, int *has_pipe, char **pipe_cmds);
+void execute_pipe(char **pipe_cmds);
+void execute_regular(char *input);
+char** tokenize(char* str);
+void redirectOut(char *fileName);
+void redirectIn(char *fileName);
+void execute_redirection(char *input, int in, int out);
 
 int main(void) {
 
@@ -36,8 +47,6 @@ int main(void) {
     return 0;
 
 }
-
-
 
 //prompt to display the machine name & username
 void prompt() {
@@ -57,162 +66,231 @@ void prompt() {
 }
 
 
-
-
 void main_loop() {
+  char input[MAX_LINE_LENGTH];
 
-  char *cmd[MAX_CMD_LEN];
-  char *args[MAX_NUM_ARGUMENTS];
-  char input[MAX_CMD_LEN];
-  int status;
-  char *delimiters = " \t\r\n";
-  int pfd[2];
+  /** here we save the standard input and output file descriptors using the dup() function before the loop, 
+      and we restore them at the end of each iteration using the dup2() function. 
+      In the end we close the copies of the file descriptors after the loop ends ----> this is used for reditection*/
+  int stdin_copy = dup(STDIN_FILENO);
+  int stdout_copy = dup(STDOUT_FILENO);
 
-  while (1) {
+  while (true) {
     prompt();
-    fgets(input, MAX_CMD_LEN, stdin);
-    input[strlen(input) - 1] = '\0';
 
-    // check if the input contains a pipe character
+    // get input
+    if (fgets(input, MAX_LINE_LENGTH, stdin) == NULL) {
+      printf("\n");
+      break;
+    }
+
+    // remove trailing newline
+    input[strcspn(input, "\n")] = 0;
+
+    // check for pipe
     int has_pipe = 0;
+    char *pipe_cmds[2];
+    check_pipe(input, &has_pipe, pipe_cmds);
+
+    //check for redirection
+    int in = 0; 
+    int out = 0;
+
     for (int i = 0; input[i] != '\0'; i++) {
-      if (input[i] == '|') {
-        has_pipe = 1;
+      if (input[i] == '>') {
+        out = 1;
+        break;
+      } 
+
+      if(input[i] == '<') {
+        in = 1;
         break;
       }
     }
 
+    // execute command(s)
     if (has_pipe) {
-      // split the input into two commands
-      char *pipe_cmds[2];
-      pipe_cmds[0] = strtok(input, "|");
-      pipe_cmds[1] = strtok(NULL, "|");
-
-      // create a pipe
-      if (pipe(pfd) == -1) {
-        perror("pipe");
-        exit(1);
-      }
-
-      // fork the first child to execute the first command
-      pid_t pid1 = fork();
-      
-      if (pid1 == 0) {
-        // redirect the standard output to the write end of the pipe
-        close(STDOUT_FILENO);
-        dup2(pfd[1], STDOUT_FILENO);
-        close(pfd[0]);
-        close(pfd[1]);
-
-        // parse the arguments of the first command
-        char *token = strtok(pipe_cmds[0], delimiters);
-        int i = 0;
-
-        while (token != NULL && i < MAX_NUM_ARGUMENTS) {
-          args[i] = token;
-          token = strtok(NULL, delimiters);
-          i++;
-        }
-
-        args[i] = NULL;
-
-        
-        // execute the first command
-        execvp(args[0], args);
-        perror(args[0]);
-        exit(1);
-      } 
-      
-      else if (pid1 < 0) {
-        perror("fork");
-        exit(1);
-      }
-
-      // fork the second child to execute the second command
-      pid_t pid2 = fork();
-      
-      if (pid2 == 0) {
-        // redirect the standard input to the read end of the pipe
-        close(STDIN_FILENO);
-        dup2(pfd[0], STDIN_FILENO);
-        close(pfd[0]);
-        close(pfd[1]);
-
-        // parse the arguments of the second command
-        char *token = strtok(pipe_cmds[1], delimiters);
-        int i = 0;
-        while (token != NULL && i < MAX_NUM_ARGUMENTS) {
-          args[i] = token;
-          token = strtok(NULL, delimiters);
-          i++;
-        }
-        
-        args[i] = NULL;
-
-        // execute the second command
-        execvp(args[0], args);
-        perror(args[0]);
-        exit(1);
-      } 
-      
-      else if (pid2 < 0) {
-        perror("fork");
-        exit(1);
-      }
-
-      // close the read and write ends of the pipe in the parent process
-      close(pfd[0]);
-      close(pfd[1]);
-
-      // wait for the child processes to complete
-      waitpid(pid1, &status, 0);
-      waitpid(pid2, &status, 0);
+      execute_pipe(pipe_cmds);
+    } else if(out) {
+      execute_redirection(input, in, out);
+    } else if(in) {
+      execute_redirection(input, in, out);
+    } else {
+      execute_regular(input);
     }
 
-    // if it doesn't have piping
+    // restore standard input and output
+    dup2(stdin_copy, STDIN_FILENO);
+    dup2(stdout_copy, STDOUT_FILENO);
+  }
 
-    else {
-      
-      char *token = strtok(input, delimiters);
-      int i = 0;
-      while (token != NULL && i < MAX_NUM_ARGUMENTS) {
-        args[i] = token;
-        token = strtok(NULL, " ");
-        i++;
-      
-      }
-      
-      args[i] = NULL;
-      
-      pid_t pid = fork();
+  close(stdin_copy);
+  close(stdout_copy);
+}
+
+
+void redirectIn(char *fileName) {
+  int in = open(fileName, O_RDONLY);
+  dup2(in, 0);
+  close(in);
+}
+
+void redirectOut(char *fileName) {
+    int out = open(fileName, O_WRONLY | O_TRUNC | O_CREAT, 0600);
+    dup2(out, 1);
+    close(out);
+}
+
+
+//function to check if there is a pipe
+void check_pipe(char *input, int *has_pipe, char **pipe_cmds) {
+  *has_pipe = 0;
+  for (int i = 0; input[i] != '\0'; i++) {
+    if (input[i] == '|') {
+      *has_pipe = 1;
+      break;
+    }
+  }
+
+  if (*has_pipe) {
+    pipe_cmds[0] = strtok(input, "|");
+    pipe_cmds[1] = strtok(NULL, "|");
+  }
+}
+
+
+char** tokenize(char* str) {
+  char* delimiters = " \t\n"; 
+
+  char* token = strtok(str, delimiters);
+  int i = 0;
+
+  char** args = malloc(sizeof(char*) * (MAX_NUM_ARGUMENTS + 1));
+  while (token != NULL && i < MAX_NUM_ARGUMENTS) {
+    args[i] = token;
+    token = strtok(NULL, delimiters);
+    i++;
+  }
+
+  args[i] = NULL;
+
+  return args;
+}
+
+//function that will execute pipes
+void execute_pipe(char **pipe_cmds) {
+  int pfd[2];
+  int status;
+
+  if (pipe(pfd) == -1) {
+    perror("pipe");
+    exit(1);
+  }
+
+  pid_t pid1 = fork();
+  if (pid1 == 0) {
+    close(STDOUT_FILENO);
+    dup2(pfd[1], STDOUT_FILENO);
+    close(pfd[0]);
+    close(pfd[1]);
+
+    char **args = tokenize(pipe_cmds[0]);
+
+    execvp(args[0], args);
+    perror(args[0]);
+    exit(1);
+  } else if (pid1 < 0) {
+    perror("fork");
+    exit(1);
+  }
+
+  pid_t pid2 = fork();
+  if (pid2 == 0) {
+    close(STDIN_FILENO);
+    dup2(pfd[0], STDIN_FILENO);
+    close(pfd[0]);
+    close(pfd[1]);
+
+    char **args = tokenize(pipe_cmds[1]);
+
+    execvp(args[0], args);
+    perror(args[0]);
+    exit(1);
+  } else if (pid2 < 0) {
+    perror("fork");
+    exit(1);
+  }
+
+  close(pfd[0]);
+  close(pfd[1]);
+
+  waitpid(pid1, &status, 0);
+  waitpid(pid2, &status, 0);
+}
+
+//function to execute redirection 
+void execute_redirection(char *input, int in, int out) {
+  char *command;
+  char *fileName;
+  int status;
+
+  if (in) {
+    command = strtok(input, "<");
+    fileName = strtok(NULL, delimiters);
+    redirectIn(fileName);
+  } else {
+    command = strtok(input, ">");
+    fileName = strtok(NULL, delimiters);
+    redirectOut(fileName);
+  }
+
+  char **args = tokenize(command);
+
+  pid_t pid = fork();
+  if (pid == 0) {
+    execvp(args[0], args);
+    perror(args[0]);
+    exit(1);
+  } else if (pid < 0) {
+    perror("fork");
+    exit(1);
+  } else {
+    waitpid(pid, &status, 0);
+  }
+}
+
+
+//function to execute regular commands
+void execute_regular(char *input) {
+  int status;
+  char **args = tokenize(input);
+
+  pid_t pid = fork();
         if (pid == 0) {
-
-
 
           if (strcmp(args[0], "wc") == 0) {
             // check if there is a file passed to wc
             if ((strcmp(args[0], "wc") == 0 && args[1] == NULL) || (strcmp(args[0], "wc") == 0 && args[1][0] == '-' && args[2] == NULL)) {
-              printf("Please provide a file name to wc command\n");
+              fprintf(stderr, "Error: wc requires file argument\n");
             } 
             
             else {
-                execvp("wc", args);
-                perror(args[0]);
-                exit(1);
-                }
+              //used for wc to get the length of the array
+              int argc = 0;
+              while (args[argc] != NULL) {
+                argc++;
+              }
+
+              my_wc(argc, args);
+            } 
           }
 
 
-
           else if (strcmp(args[0], "grep") == 0) {
-            // check if there is a pattern and a file passed to grep
             if (args[1] == NULL || args[2] == NULL) {
-              printf("Please provide a pattern and file name to grep command\n");
-          } 
-            else {
-              execvp("grep", args);
-              perror(args[0]);
-              exit(1);
+            fprintf(stderr, "Error: grep requires both pattern and file arguments\n");
+          } else {
+            my_grep(args[1], args[2]);
             }
           }
 
@@ -220,21 +298,19 @@ void main_loop() {
 
           else if (strcmp(args[0], "df") == 0) {
             // df doesn't take any arguments by default, so we don't need to check anything here
-            execvp("df", args);
-            perror(args[0]);
-            exit(1);
+            my_df(args[1]);
           }
 
 
 
           else if (strcmp(args[0], "cmatrix") == 0) {
-            cmatrix(args[1]);
+            // cmatrix doesn't take any arguments by default, so we don't need to check anything here
+            my_cmatrix(args[1]);
           }
 
 
 
           else if (strcmp(args[0], "clear") == 0) {
-            //cmatrix doesn't take any arguments by default
             system("clear");
           }
 
@@ -257,5 +333,4 @@ void main_loop() {
           exit(1);
       } 
     }
-  }
-}
+

@@ -1,18 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> //getlogin() && getusername()
-#include <limits.h> //HOST_NAME_MAX
-#include <string.h> //strtok()
-#include <sys/wait.h> //wait()
-#include <ctype.h> //isspace()
 #include <errno.h> //Provides error codes for various system errors
 #include <dirent.h> // Provides functions to access directories and their contents
-#include <sys/ioctl.h> //Provides functions to control I/O operations on devices
-#include <signal.h> // Provides functions to handle signals like SIGINT
 #include <sys/statvfs.h> // Provides functions to get information about file systems like df()
 
 
-void df(char* option) {
+void my_df(char* option) {
     struct statvfs vfs;
     
     if (statvfs(".", &vfs) == -1) {

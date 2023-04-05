@@ -1,39 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> //getlogin() && getusername()
-#include <limits.h> //HOST_NAME_MAX
-#include <string.h> //strtok()
-#include <sys/wait.h> //wait()
-#include <ctype.h> //isspace()
 #include <errno.h> //Provides error codes for various system errors
 #include <dirent.h> // Provides functions to access directories and their contents
 #include <sys/ioctl.h> //Provides functions to control I/O operations on devices
 #include <signal.h> // Provides functions to handle signals like SIGINT
-#include <sys/statvfs.h> // Provides functions to get information about file systems like df()
 
 #define R(t,x,y) f=x;x-=t*y;y+=t*f;f=(3-x*x-y*y)/2;x*=f;y*=f; //donut()
 
-
 void donut();
 
-
-
-
-
-
-// Used for cmatrix (ctrl + C)
-// Declare a global flag variable to indicate if SIGINT has been received
+// used for cmatrix (ctrl + C)
+// declare a global flag variable to indicate if SIGINT has been received
 int stop = 0;
-// Define a signal handler for SIGINT
+// define a signal handler for SIGINT
 void sigint_handler(int sig) {
     printf("\n");
     stop = 1;
 }
 
 
-
-
-void cmatrix(char* arg) {
+void my_cmatrix(char* arg) {
 
     int flag = 0;
 
@@ -48,14 +34,11 @@ void cmatrix(char* arg) {
             flag = 3;
         } 
         else if (strcmp(arg, "-r") != 0 && strcmp(arg, "-d") != 0 && strcmp(arg, "-B") != 0){
-            printf("Unknown argument: %s\n", arg);
+            printf("Unknown argument");
             printf("Available arguments: \n-r: Rainbow mode\n-d: Donut\n-B: Bold mode\n");
             exit(1);
         }
     }
-
-
-
 
 
     signal(SIGINT, sigint_handler); // register the signal handler for SIGINT
@@ -140,14 +123,7 @@ void cmatrix(char* arg) {
 
     //print matrix
 
-
-
-    //FLAGS FOR CMATRIX
-
-
-
-// Default code (no flags applied)
-//////////////////////////////////////////////////////////////////////////////////////////////    
+// default code (no flags applied) 
     if (flag == 0){ 
         for (x=0;x+1<w.ws_row;x++) {
             for (y=0;y<w.ws_col;y++) {
@@ -164,8 +140,8 @@ void cmatrix(char* arg) {
     } 
 
 
-// Bold flag (-B)
-//////////////////////////////////////////////////////////////////////////////////////////////
+
+// bold flag (-B)
     else if (flag == 1){ // makes the text BOLD
         for (x=0;x+1<w.ws_row;x++) {   
             for (y=0;y<w.ws_col;y++) {   
@@ -182,11 +158,7 @@ void cmatrix(char* arg) {
 
 
 
-
-
-
-    // Rainbow flag (-r)
-//////////////////////////////////////////////////////////////////////////////////////////////
+    // rainbow flag (-r)
     else if (flag == 2) {
         for (x=0;x+1<w.ws_row;x++) {
             for (y=0;y<w.ws_col;y++) {
@@ -210,8 +182,7 @@ void cmatrix(char* arg) {
     }
 
 
-// Donut flag (-d)
-///////////////////////////////////////////////////////////////////////////////////
+// donut flag (-d)
     else if (flag == 3){
         donut();
         exit(1);
@@ -224,17 +195,7 @@ void cmatrix(char* arg) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-//Donut function
+// function that displays a donut
 
 void donut() {
 
