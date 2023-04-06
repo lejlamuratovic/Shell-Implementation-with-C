@@ -2,7 +2,7 @@
 
 This project is an implementation of a Linux shell using the C programming language for Operating Systems course. 
 
-# Group members
+## Group members
 *Lejla Muratović* \
 *Emir Kugić*
 
@@ -93,6 +93,11 @@ To start the program run the following command:
 ```
 
 
+## Challenges we encountered
+- Debugging errors in piping
+- Lack of resources
+- Handling input/output redirection
+- Handling signals and interrupts
 
 
 
