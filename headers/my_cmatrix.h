@@ -4,6 +4,7 @@
 #include <dirent.h> // Provides functions to access directories and their contents
 #include <sys/ioctl.h> //Provides functions to control I/O operations on devices
 #include <signal.h> // Provides functions to handle signals like SIGINT
+#include <string.h>
 
 #define R(t,x,y) f=x;x-=t*y;y+=t*f;f=(3-x*x-y*y)/2;x*=f;y*=f; //donut()
 

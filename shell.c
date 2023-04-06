@@ -14,17 +14,16 @@
 #include <fcntl.h> // for flags in open
 
 
-#include "my_wc.c"
-#include "my_cmatrix.c"
-#include "my_grep.c"
-#include "my_df.c"
+#include "headers/my_wc.h"
+#include "headers/my_cmatrix.h"
+#include "headers/my_grep.h"
+#include "headers/my_df.h"
 
 #define MAX_CMD_LEN 256
 #define MAX_NUM_ARGUMENTS 16
+#define MAX_TOKEN_LENGTH 50
 #define MAX_LINE_LENGTH 1024
 #define true 1
-
-char delimiters[] = " \t\r\n\v\f"; // declare delimiters as a global variable
 
 void prompt();
 void main_loop();
@@ -62,7 +61,7 @@ int main(void) {
 
 }
 
-//prompt to display the machine name & username
+// prompt to display the machine name & username
 void prompt() {
   printf("\033]0;Space Shell\007"); //sets the name of the shell to "Emir and Lejla"
 
@@ -83,8 +82,8 @@ void prompt() {
 void main_loop() {
   char input[MAX_LINE_LENGTH];
 
-  /** here we save the standard input and output file descriptors using the dup() function before the loop,
-      and we restore them at the end of each iteration using the dup2() function.
+  /** here we save the standard input and output file descriptors using the dup() function before the loop, 
+      and we restore them at the end of each iteration using the dup2() function. 
       In the end we close the copies of the file descriptors after the loop ends ----> this is used for reditection*/
   int stdin_copy = dup(STDIN_FILENO);
   int stdout_copy = dup(STDOUT_FILENO);
@@ -107,14 +106,14 @@ void main_loop() {
     check_pipe(input, &has_pipe, pipe_cmds);
 
     //check for redirection
-    int in = 0;
+    int in = 0; 
     int out = 0;
 
     for (int i = 0; input[i] != '\0'; i++) {
       if (input[i] == '>') {
         out = 1;
         break;
-      }
+      } 
 
       if(input[i] == '<') {
         in = 1;
@@ -156,7 +155,29 @@ void redirectOut(char *fileName) {
 }
 
 
-//function to check if there is a pipe
+char** tokenize(char* str) {
+  char* delimiters = " \t\n\v\r\f"; 
+
+  char* token = strtok(str, delimiters);
+  int i = 0;
+
+  char** args = malloc(sizeof(char*) * (MAX_NUM_ARGUMENTS + 1));
+
+  // add each token to the args array
+  while (token != NULL && i < MAX_NUM_ARGUMENTS) {
+    args[i] = token;
+    token = strtok(NULL, delimiters);
+    i++;
+  }
+
+  // add null terminator to the end of the array
+  args[i] = NULL;
+
+  return args;
+}
+
+
+// function to check if there is a pipe
 void check_pipe(char *input, int *has_pipe, char **pipe_cmds) {
   *has_pipe = 0;
   for (int i = 0; input[i] != '\0'; i++) {
@@ -173,36 +194,22 @@ void check_pipe(char *input, int *has_pipe, char **pipe_cmds) {
 }
 
 
-char** tokenize(char* str) {
-  char* delimiters = " \t\n";
-
-  char* token = strtok(str, delimiters);
-  int i = 0;
-
-  char** args = malloc(sizeof(char*) * (MAX_NUM_ARGUMENTS + 1));
-  while (token != NULL && i < MAX_NUM_ARGUMENTS) {
-    args[i] = token;
-    token = strtok(NULL, delimiters);
-    i++;
-  }
-
-  args[i] = NULL;
-
-  return args;
-}
-
-//function that will execute pipes
+// function that will execute pipes
 void execute_pipe(char **pipe_cmds) {
+
   int pfd[2];
   int status;
 
+  // create a pipe
   if (pipe(pfd) == -1) {
     perror("pipe");
     exit(1);
   }
 
+  // fork a child process to execute the first command
   pid_t pid1 = fork();
   if (pid1 == 0) {
+    // redirect standard input to the write end of the pipe
     close(STDOUT_FILENO);
     dup2(pfd[1], STDOUT_FILENO);
     close(pfd[0]);
@@ -212,14 +219,17 @@ void execute_pipe(char **pipe_cmds) {
 
     execvp(args[0], args);
     perror(args[0]);
+
     exit(1);
   } else if (pid1 < 0) {
     perror("fork");
     exit(1);
   }
 
+  // fork a child process to execute the second command
   pid_t pid2 = fork();
   if (pid2 == 0) {
+    // redirect standard input to the read end of the pipe
     close(STDIN_FILENO);
     dup2(pfd[0], STDIN_FILENO);
     close(pfd[0]);
@@ -229,6 +239,7 @@ void execute_pipe(char **pipe_cmds) {
 
     execvp(args[0], args);
     perror(args[0]);
+
     exit(1);
   } else if (pid2 < 0) {
     perror("fork");
@@ -238,32 +249,36 @@ void execute_pipe(char **pipe_cmds) {
   close(pfd[0]);
   close(pfd[1]);
 
+  // wait for both child processes to finish
   waitpid(pid1, &status, 0);
   waitpid(pid2, &status, 0);
 }
 
-//function to execute redirection
+//function to execute redirection 
 void execute_redirection(char *input, int in, int out) {
   char *command;
   char *fileName;
   int status;
+  char **args;
+  char *delimiters = " \t\r\n\a"; // delimiters used by strtok()
 
   if (in) {
-    command = strtok(input, "<");
-    fileName = strtok(NULL, delimiters);
+    command = strtok(input, "<"); // separate the command part from input
+    fileName = strtok(NULL, delimiters); // get the file name for input redirection
     redirectIn(fileName);
   } else {
-    command = strtok(input, ">");
-    fileName = strtok(NULL, delimiters);
+    command = strtok(input, ">"); // separate the command part from input
+    fileName = strtok(NULL, delimiters); // get the file name for output redirection
     redirectOut(fileName);
   }
 
-  char **args = tokenize(command);
+  args = tokenize(command);
 
   pid_t pid = fork();
   if (pid == 0) {
     execvp(args[0], args);
     perror(args[0]);
+    
     exit(1);
   } else if (pid < 0) {
     perror("fork");
@@ -286,8 +301,8 @@ void execute_regular(char *input) {
       // check if there is a file passed to wc
       if ((strcmp(args[0], "wc") == 0 && args[1] == NULL) || (strcmp(args[0], "wc") == 0 && args[1][0] == '-' && args[2] == NULL)) {
         fprintf(stderr, "Error: wc requires file argument\n");
-      }
-
+      } 
+      
       else {
         //used for wc to get the length of the array
         int argc = 0;
@@ -296,7 +311,7 @@ void execute_regular(char *input) {
         }
 
         my_wc(argc, args);
-      }
+      } 
     }
 
 
@@ -330,14 +345,15 @@ void execute_regular(char *input) {
       // command not implemented
       fprintf(stderr, "%s: command not found\n", args[0]);
     }
-  }
-
+  } 
+        
   else if (pid > 0) {
     waitpid(pid, &status, 0);
-  }
-
+  } 
+  
   else {
     perror("Fork");
     exit(1);
-  }
+  } 
 }
+

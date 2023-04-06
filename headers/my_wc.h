@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h> //isspace()
+#include <errno.h> // error codes for various system errors
+#include <string.h>
 
 
 void wc_results(int lines, int words, int chars, int bytes,int lineFlag,int wordFlag,int charFlag,int byteFlag, char* filename) {
@@ -109,7 +111,7 @@ int my_wc(int argc, char** argv) {
         file = fopen(argv[arg], "r");
         if (file) {
             const size_t line_size = 400;
-            char* readLine = malloc(line_size);
+            char* readLine = (char*) malloc(line_size);
 
             while (fgets(readLine, line_size, file) != NULL) {
 
