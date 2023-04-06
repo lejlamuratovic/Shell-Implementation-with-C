@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <sched.h>
+#include <signal.h>
 
 
 // this function provides the basic implementation of fork(), wait(), and exec() system calls
@@ -71,6 +72,7 @@ void sys_execle() {
     printf("This line should not be printed\n");
 }
 
+// example function used by sys_clone()
 void *child_fn(void *arg) {
     printf("Some example code running under child process.\n");
 
@@ -94,12 +96,14 @@ void *child_fn(void *arg) {
 void sys_clone() {
     printf("Starting clone()...\n");
 
+    // allocate memory for the child process;
     void *stack = malloc(1024*1024);
     if (stack == NULL) {
         printf("Unable to allocate stack.\n");
         exit(EXIT_FAILURE);
     }
 
+    // create child process using clone system call
     pid_t pid = clone((int (*)(void *)) child_fn, stack + (1024 * 1024), SIGCHLD, NULL);
     if (pid == -1) {
         printf("Unable to create child process.\n");
@@ -109,6 +113,7 @@ void sys_clone() {
     printf("Waiting for child process...\n");
     waitpid(pid, NULL, 0);
 
+    // free allocated memory
     free(stack);
 
     printf("Child process terminated.\n");

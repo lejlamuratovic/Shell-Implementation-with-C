@@ -8,17 +8,21 @@ int my_grep(char* pattern, char* filename) {
     FILE *fp = NULL;
     size_t count = 0;
 
+    // open the file for reading 
     fp = fopen(filename, "r");
     if (!fp) {
         fprintf(stderr, "Error: Unable to open file %s.\n", filename);
         return -1;
     }
 
+    // read each line of file
     while (fgets(lineBuffer, BUFFER_LENGTH, fp)) {
+        // check if the line contains the pattern
         if (strstr(lineBuffer, pattern)) {
             count++;
             printf("%s", lineBuffer);
         }
+        // check for any errors while reading file
         if (ferror(fp)) {
             fprintf(stderr, "Error: Failed to read file %s.\n", filename);
             break;
