@@ -38,7 +38,7 @@ void my_cmatrix(char* arg) {
         } 
         else if (strcmp(arg, "-r") != 0 && strcmp(arg, "-d") != 0 && strcmp(arg, "-B") != 0 && strcmp(arg, "-s") != 0){
             printf("Unknown argument");
-            printf("Available arguments: \n-r: Rainbow mode\n-d: Donut\n-B: Bold mode\n");
+            printf("Available arguments: \n-r: Rainbow mode\n-d: Donut\n-B: Bold mode\n-s: Space mode\n");
             exit(1);
         }
     }
@@ -255,7 +255,8 @@ void donut() {
         // print the donut in green color
         for (k = 0; k < 1761; k++) {
             putchar('\033'); // start ANSI escape sequence
-            printf("[32m"); // set text color to green
+            //printf("[32m"); // set text color to green
+            printf("\033[37m"); // set text color to white
             putchar(k % 80 ? b[k] : '\n');
             putchar('\033'); // start ANSI escape sequence
             printf("[0m"); // reset text color
@@ -278,8 +279,7 @@ void donut() {
 
 
 //Giving some delay
-void delay( unsigned int value)
-{
+void delay( unsigned int value) {
     unsigned int count1 =0;
     unsigned int count2 = 0;
 
