@@ -9,6 +9,7 @@
 #define R(t,x,y) f=x;x-=t*y;y+=t*f;f=(3-x*x-y*y)/2;x*=f;y*=f; //donut()
 
 void donut();
+int rocket();
 
 // used for cmatrix (ctrl + C)
 // declare a global flag variable to indicate if SIGINT has been received
