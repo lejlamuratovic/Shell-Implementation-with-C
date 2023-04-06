@@ -83,8 +83,8 @@ void prompt() {
 void main_loop() {
   char input[MAX_LINE_LENGTH];
 
-  /** here we save the standard input and output file descriptors using the dup() function before the loop, 
-      and we restore them at the end of each iteration using the dup2() function. 
+  /** here we save the standard input and output file descriptors using the dup() function before the loop,
+      and we restore them at the end of each iteration using the dup2() function.
       In the end we close the copies of the file descriptors after the loop ends ----> this is used for reditection*/
   int stdin_copy = dup(STDIN_FILENO);
   int stdout_copy = dup(STDOUT_FILENO);
@@ -107,14 +107,14 @@ void main_loop() {
     check_pipe(input, &has_pipe, pipe_cmds);
 
     //check for redirection
-    int in = 0; 
+    int in = 0;
     int out = 0;
 
     for (int i = 0; input[i] != '\0'; i++) {
       if (input[i] == '>') {
         out = 1;
         break;
-      } 
+      }
 
       if(input[i] == '<') {
         in = 1;
@@ -174,7 +174,7 @@ void check_pipe(char *input, int *has_pipe, char **pipe_cmds) {
 
 
 char** tokenize(char* str) {
-  char* delimiters = " \t\n"; 
+  char* delimiters = " \t\n";
 
   char* token = strtok(str, delimiters);
   int i = 0;
@@ -242,7 +242,7 @@ void execute_pipe(char **pipe_cmds) {
   waitpid(pid2, &status, 0);
 }
 
-//function to execute redirection 
+//function to execute redirection
 void execute_redirection(char *input, int in, int out) {
   char *command;
   char *fileName;
@@ -286,8 +286,8 @@ void execute_regular(char *input) {
       // check if there is a file passed to wc
       if ((strcmp(args[0], "wc") == 0 && args[1] == NULL) || (strcmp(args[0], "wc") == 0 && args[1][0] == '-' && args[2] == NULL)) {
         fprintf(stderr, "Error: wc requires file argument\n");
-      } 
-      
+      }
+
       else {
         //used for wc to get the length of the array
         int argc = 0;
@@ -296,7 +296,7 @@ void execute_regular(char *input) {
         }
 
         my_wc(argc, args);
-      } 
+      }
     }
 
 
@@ -311,7 +311,9 @@ void execute_regular(char *input) {
 
     else if (strcmp(args[0], "df") == 0) {
       // df doesn't take any arguments by default, so we don't need to check anything here
-      my_df(args[1]);
+      //my_df(args[1]);
+      my_df();
+
     }
 
 
@@ -330,14 +332,14 @@ void execute_regular(char *input) {
       // command not implemented
       fprintf(stderr, "%s: command not found\n", args[0]);
     }
-  } 
-        
+  }
+
   else if (pid > 0) {
     waitpid(pid, &status, 0);
-  } 
-  
+  }
+
   else {
     perror("Fork");
     exit(1);
-  } 
+  }
 }
