@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> //getlogin() && getusername()
-#include <limits.h> //HOST_NAME_MAX
-#include <string.h> //strtok()
-#include <sys/wait.h> //wait()
-#include <ctype.h> //isspace()
+#include <unistd.h> // getlogin() && getusername()
+#include <limits.h> // HOST_NAME_MAX
+#include <string.h> // strtok()
+#include <sys/wait.h> // wait()
+#include <ctype.h> // isspace()
 #include <errno.h> // error codes for various system errors
 #include <dirent.h> // functions to access directories and their contents
 #include <sys/ioctl.h> // functions to control I/O operations on devices
@@ -37,20 +37,34 @@ void redirectIn(char *fileName);
 void execute_redirection(char *input, int in, int out);
 
 int main(void) {
+  signal(SIGINT, sigint_handler); // ctrl + c
 
-    signal(SIGINT, sigint_handler); // ctrl + c
+  system("clear");
 
-    system("clear");
+  printf("\033[0;32m"); // sets text color to green
+  printf("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+  printf("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡶⠟⠛⠛⠛⠛⠻⢶⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+  printf("⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⠋⣼⣿⠇⠀⠀⠀⠀⠀⠙⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+  printf("⠀⠀⠀⠀⠀⣠⣤⣶⠀⢿⡀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡿⠀⣶⣤⣄⠀⠀⠀⠀⠀\n");
+  printf("⠀⠀⠀⣴⠿⠿⣿⣿⣧⡈⠛⠷⠶⢶⣶⣶⡶⠶⠾⠛⢁⣼⣿⡿⠿⠿⣦⠀⠀⠀\n");
+  printf("⠀⠀⢸⡇⢰⣶⡄⢹⣿⣿⣷⣶⣦⣤⣤⣤⣤⣴⣶⣾⣿⣿⠋⢰⣶⠆⢸⡇⠀⠀\n");
+  printf("⠀⠀⠀⠳⣄⣉⣁⣼⣿⣿⣿⣿⡿⠋⣁⣈⠙⢿⣿⣿⣿⣿⣦⣈⣁⣤⠟⠀⠀⠀\n");
+  printf("⠀⠀⠀⠀⠀⠙⠛⠿⢿⣿⣿⣿⣧⡈⠛⠛⢁⣼⣿⣿⣿⡿⠿⠛⠋⠀⠀⠀⠀⠀\n");
+    printf("\033[0;33m"); // sets text color to yellow
+  //printf("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢉⣉⣉⠁⠈⣉⣉⡉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+  printf("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+  printf("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+  printf("⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀\n\n\n\n\n");
 
-    main_loop();
+  main_loop();
 
-    return 0;
+  return 0;
 
 }
 
 //prompt to display the machine name & username
 void prompt() {
-  printf("\033]0;Emir and Lejla\007"); //sets the name of the shell to "Emir and Lejla"
+  printf("\033]0;Space Shell\007"); //sets the name of the shell to "Emir and Lejla"
 
   char *username;
   char hostname[HOST_NAME_MAX + 1];
@@ -58,7 +72,7 @@ void prompt() {
   username = getlogin();
   gethostname(hostname, HOST_NAME_MAX + 1);
 
-  printf("\033[1;31m"); //set color to red
+  printf("\033[1;32m"); // sets text color to neon green
   printf("%s@%s", username, hostname);
   printf("\033[0m"); //reset color
 
@@ -136,9 +150,9 @@ void redirectIn(char *fileName) {
 }
 
 void redirectOut(char *fileName) {
-    int out = open(fileName, O_WRONLY | O_TRUNC | O_CREAT, 0600);
-    dup2(out, 1);
-    close(out);
+  int out = open(fileName, O_WRONLY | O_TRUNC | O_CREAT, 0600);
+  dup2(out, 1);
+  close(out);
 }
 
 
@@ -266,71 +280,64 @@ void execute_regular(char *input) {
   char **args = tokenize(input);
 
   pid_t pid = fork();
-        if (pid == 0) {
+  if (pid == 0) {
 
-          if (strcmp(args[0], "wc") == 0) {
-            // check if there is a file passed to wc
-            if ((strcmp(args[0], "wc") == 0 && args[1] == NULL) || (strcmp(args[0], "wc") == 0 && args[1][0] == '-' && args[2] == NULL)) {
-              fprintf(stderr, "Error: wc requires file argument\n");
-            } 
-            
-            else {
-              //used for wc to get the length of the array
-              int argc = 0;
-              while (args[argc] != NULL) {
-                argc++;
-              }
+    if (strcmp(args[0], "wc") == 0) {
+      // check if there is a file passed to wc
+      if ((strcmp(args[0], "wc") == 0 && args[1] == NULL) || (strcmp(args[0], "wc") == 0 && args[1][0] == '-' && args[2] == NULL)) {
+        fprintf(stderr, "Error: wc requires file argument\n");
+      } 
+      
+      else {
+        //used for wc to get the length of the array
+        int argc = 0;
+        while (args[argc] != NULL) {
+          argc++;
+        }
 
-              my_wc(argc, args);
-            } 
-          }
-
-
-          else if (strcmp(args[0], "grep") == 0) {
-            if (args[1] == NULL || args[2] == NULL) {
-            fprintf(stderr, "Error: grep requires both pattern and file arguments\n");
-          } else {
-            my_grep(args[1], args[2]);
-            }
-          }
-
-
-
-          else if (strcmp(args[0], "df") == 0) {
-            // df doesn't take any arguments by default, so we don't need to check anything here
-            my_df(args[1]);
-          }
-
-
-
-          else if (strcmp(args[0], "cmatrix") == 0) {
-            // cmatrix doesn't take any arguments by default, so we don't need to check anything here
-            my_cmatrix(args[1]);
-          }
-
-
-
-          else if (strcmp(args[0], "clear") == 0) {
-            system("clear");
-          }
-
-
-
-          else {
-            // command not implemented
-            fprintf(stderr, "%s: command not found\n", args[0]);
-          }
-
-
-        } 
-        
-        else if (pid > 0) {
-          waitpid(pid, &status, 0);
-        } 
-        
-        else {
-          perror("Fork");
-          exit(1);
+        my_wc(argc, args);
       } 
     }
 
+
+    else if (strcmp(args[0], "grep") == 0) {
+      if (args[1] == NULL || args[2] == NULL) {
+      fprintf(stderr, "Error: grep requires both pattern and file arguments\n");
+    } else {
+      my_grep(args[1], args[2]);
+      }
+    }
+
+
+    else if (strcmp(args[0], "df") == 0) {
+      // df doesn't take any arguments by default, so we don't need to check anything here
+      my_df(args[1]);
+    }
+
+
+    else if (strcmp(args[0], "cmatrix") == 0) {
+      // cmatrix doesn't take any arguments by default, so we don't need to check anything here
+      my_cmatrix(args[1]);
+    }
+
+
+    else if (strcmp(args[0], "clear") == 0) {
+      system("clear");
+    }
+
+
+    else {
+      // command not implemented
+      fprintf(stderr, "%s: command not found\n", args[0]);
+    }
+  } 
+        
+  else if (pid > 0) {
+    waitpid(pid, &status, 0);
+  } 
+  
+  else {
+    perror("Fork");
+    exit(1);
+  } 
+}
