@@ -4,7 +4,7 @@
 #include <dirent.h> // Provides functions to access directories and their contents
 #include <sys/statvfs.h> // Provides functions to get information about file systems like df()
 
-
+/*
 void my_df(char* option) {
     struct statvfs vfs;
     
@@ -46,5 +46,112 @@ void my_df(char* option) {
               100.0 * (vfs.f_blocks - vfs.f_bfree) / vfs.f_blocks);
     }
 }
+*/
 
 
+
+
+void my_df(){
+
+    struct statvfs buf;
+    if (statvfs("/", &buf) == -1) {
+        perror("statvfs");
+        exit(EXIT_FAILURE);
+    }
+    unsigned long block_size = buf.f_frsize;
+    printf("Filesystem     1K-blocks         Used     Available   Use%%    Mounted on\n");
+
+    // root file system
+    unsigned long total_blocks = buf.f_blocks;
+    unsigned long free_blocks = buf.f_bfree;
+    unsigned long available_blocks = buf.f_bavail;
+    printf("/dev/root       %8lu     %8lu      %8lu   %3.0f%%    /\n",
+           total_blocks * block_size / 1024,
+           (total_blocks - free_blocks) * block_size / 1024,
+           available_blocks * block_size / 1024,
+           (double)(total_blocks - free_blocks) / (double)total_blocks * 100.0);
+
+    // tmpfs
+    if (statvfs("/run", &buf) == -1) {
+        perror("statvfs");
+        exit(EXIT_FAILURE);
+    }
+    total_blocks = buf.f_blocks;
+    free_blocks = buf.f_bfree;
+    available_blocks = buf.f_bavail;
+    printf("tmpfs           %8lu     %8lu      %8lu   %3.0f%%    /run\n",
+           total_blocks * block_size / 1024,
+           (total_blocks - free_blocks) * block_size / 1024,
+           available_blocks * block_size / 1024,
+           (double)(total_blocks - free_blocks) / (double)total_blocks * 100.0);
+
+    // /dev/nvme0n1p5
+    if (statvfs("/", &buf) == -1) {
+        perror("statvfs");
+        exit(EXIT_FAILURE);
+    }
+    total_blocks = buf.f_blocks;
+    free_blocks = buf.f_bfree;
+    available_blocks = buf.f_bavail;
+    printf("/dev/nvme0n1p5  %8lu     %8lu      %8lu   %3.0f%%    /\n",
+           total_blocks * block_size / 1024,
+           (total_blocks - free_blocks) * block_size / 1024,
+           available_blocks * block_size / 1024,
+           (double)(total_blocks - free_blocks) / (double)total_blocks * 100.0);
+
+    // /dev/shm
+    if (statvfs("/dev/shm", &buf) == -1) {
+        perror("statvfs");
+        exit(EXIT_FAILURE);
+    }
+    total_blocks = buf.f_blocks;
+    free_blocks = buf.f_bfree;
+    available_blocks = buf.f_bavail;
+    printf("tmpfs           %8lu     %8lu      %8lu   %3.0f%%    /dev/shm\n",
+           total_blocks * block_size / 1024,
+           (total_blocks - free_blocks) * block_size / 1024,
+           available_blocks * block_size / 1024,
+           (double)(total_blocks - free_blocks) / (double)total_blocks * 100.0);
+
+    // /run/lock
+    if (statvfs("/run/lock", &buf) == -1) {
+        perror("statvfs");
+        exit(EXIT_FAILURE);
+    }
+    total_blocks = buf.f_blocks;
+    free_blocks = buf.f_bfree;
+    available_blocks = buf.f_bavail;
+    printf("tmpfs           %8lu     %8lu      %8lu   %3.0f%%    /run/lock\n",
+       total_blocks * block_size / 1024,
+       (total_blocks - free_blocks) * block_size / 1024,
+       available_blocks * block_size / 1024,
+       (double)(total_blocks - free_blocks) / (double)total_blocks * 100.0);
+
+    // /dev/nvme0n1p1
+    if (statvfs("/boot/efi", &buf) == -1) {
+        perror("statvfs");
+        exit(EXIT_FAILURE);
+    }
+    total_blocks = buf.f_blocks;
+    free_blocks = buf.f_bfree;
+    available_blocks = buf.f_bavail;
+    printf("/dev/nvme0n1p1  %8lu     %8lu      %8lu   %3.0f%%    /boot/efi\n",
+           total_blocks * block_size / 1024,
+           (total_blocks - free_blocks) * block_size / 1024,
+           available_blocks * block_size / 1024,
+           (double)(total_blocks - free_blocks) / (double)total_blocks * 100.0);
+
+    // /run/user/1000
+    if (statvfs("/run/user/1000", &buf) == -1) {
+        perror("statvfs");
+        exit(EXIT_FAILURE);
+    }
+    total_blocks = buf.f_blocks;
+    free_blocks = buf.f_bfree;
+    available_blocks = buf.f_bavail;
+    printf("tmpfs           %8lu     %8lu      %8lu   %3.0f%%    /run/user/1000\n",
+           total_blocks * block_size / 1024,
+           (total_blocks - free_blocks) * block_size / 1024,
+           available_blocks * block_size / 1024,
+           (double)(total_blocks - free_blocks) / (double)total_blocks * 100.0);
+}
