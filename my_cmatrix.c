@@ -277,8 +277,6 @@ void donut() {
 
 
 
-#include <stdio.h>
-
 //Giving some delay
 void delay( unsigned int value)
 {
@@ -311,8 +309,7 @@ const char rocket_v[] =
         `-\"\"\"-`\n\
 ";
 
-int rocket()
-{
+int rocket() {
 
     int jumpControlAtBottom = 0;
     const int someDelay = 6000;
