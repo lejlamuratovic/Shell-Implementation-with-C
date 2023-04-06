@@ -295,7 +295,7 @@ void delay( unsigned int value)
 
 // string to display rocket_v
 const char rocket_v[] =
-    "           ^ \n\
+    "\033[32m            ^ \n\
           /^\\\n\
           |-|\n\
           | |\n\
