@@ -5,17 +5,26 @@
 
 void wc_results(int lines, int words, int chars, int bytes,int lineFlag,int wordFlag,int charFlag,int byteFlag, char* filename) {
     
-    if (lineFlag==1) {printf("Number of lines in the file is: %d\t",lines);};
-    if (wordFlag==1) {printf("Number of words in the file is: %d\t",words);};
-    if (charFlag==1) {printf("Number of characters in the file is: %d\t",chars);};
-    if (byteFlag==1) {printf("Number of lines in the file is: c%d\t ",bytes);};
-
-    if(lineFlag == 0 && wordFlag == 0 && charFlag == 0 && byteFlag == 0){
-      printf("%d\t%d\t%d\t",lines,words,chars);
+    if (lineFlag == 1) {
+        printf("\033[34mNumber of lines in the file is: \033[37m%d\t", lines);
+    }
+    if (wordFlag == 1) {
+        printf("\033[34mNumber of words in the file is: \033[37m%d\t", words);
+    }
+    if (charFlag == 1) {
+        printf("\033[34mNumber of characters in the file is: \033[37m%d\t", chars);
+    }
+    if (byteFlag == 1) {
+        printf("\033[34mNumber of bytes in the file is: \033[37m%d\t ", bytes);
     }
 
-    printf("%s\n",filename);
-  }
+    if (lineFlag == 0 && wordFlag == 0 && charFlag == 0 && byteFlag == 0) {
+        printf("\033[37m%d\t\033[37m%d\t\033[37m%d\t", lines, words, chars);
+    }
+
+    printf("\033[94m%s\033[97m\n", filename);
+
+    }
 
 int my_wc(int argc, char** argv) {
 
