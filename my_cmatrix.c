@@ -33,7 +33,10 @@ void my_cmatrix(char* arg) {
         else if(strcmp(arg, "-d") == 0) {
             flag = 3;
         } 
-        else if (strcmp(arg, "-r") != 0 && strcmp(arg, "-d") != 0 && strcmp(arg, "-B") != 0){
+        else if(strcmp(arg, "-s") == 0) {
+            flag = 4;
+        } 
+        else if (strcmp(arg, "-r") != 0 && strcmp(arg, "-d") != 0 && strcmp(arg, "-B") != 0 && strcmp(arg, "-s") != 0){
             printf("Unknown argument");
             printf("Available arguments: \n-r: Rainbow mode\n-d: Donut\n-B: Bold mode\n");
             exit(1);
@@ -187,6 +190,15 @@ void my_cmatrix(char* arg) {
         donut();
         exit(1);
         }
+
+
+
+
+    // donut flag (-s)
+    else if (flag == 4){
+        rocket();
+        exit(1);
+        }
     } 
     stop = 0; // reset the stop flag
 }
@@ -258,4 +270,72 @@ void donut() {
         system("clear");
     }
     stop = 0; // reset the stop flag
+}
+
+
+
+
+
+
+#include <stdio.h>
+
+//Giving some delay
+void delay( unsigned int value)
+{
+    unsigned int count1 =0;
+    unsigned int count2 = 0;
+
+    for(count1 = 0; count1 < value ; count1++ )
+    {
+        for(count2 = 0; count2 < count1 ; count2++ )
+        {
+
+        }
+    }
+}
+
+
+// string to display rocket_v
+const char rocket_v[] =
+    "           ^ \n\
+          /^\\\n\
+          |-|\n\
+          | |\n\
+          |I|\n\
+          |S|\n\
+          |R|\n\
+          |O|\n\
+         /| |\\\n\
+        / | | \\\n\
+       |  | |  |\n\
+        `-\"\"\"-`\n\
+";
+
+int rocket()
+{
+
+    int jumpControlAtBottom = 0;
+    const int someDelay = 6000;
+    int shifControl = 0;
+
+
+    //jump to bottom of console
+
+    for (jumpControlAtBottom = 0; jumpControlAtBottom < 30; ++jumpControlAtBottom)
+    {
+        printf("\n");
+    }
+
+    //Print rocket_v
+    fputs(rocket_v,stdout);
+
+    for (shifControl = 0; shifControl < 30; ++shifControl)
+    {
+        // rocket_v move on the basis of delay
+        delay(someDelay);
+        
+        // move rocket_v a line upward
+        printf("\n");
+    }
+    return 0;
 }
