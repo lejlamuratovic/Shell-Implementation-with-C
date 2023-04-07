@@ -22,7 +22,7 @@ This project is an implementation of a Linux shell using the C programming langu
 ## Outline
 1. Custom prompt
 
-2. The Space Shell can perform the following commands:
+2. The Space Shell can perform all built-in commands, but it also calls the custom implementations of the following commands:
 - *grep*
 - *df*
 - *wc* with flags:
@@ -59,11 +59,11 @@ A1: In a single-core, uniprocessor system that supports multiprogramming, only o
 ### Q2: Explain why system calls are needed for a shared memory method of inter-process communication (IPC). If there are multiple threads in one process, are the system calls needed for sharing memory between those threads?
 
 
-A2: System calls are necessary for a shared memory method of inter-process communication (IPC) because shared memory involves a region of memory that is accessible by multiple processes. Without the use of system calls, it would not be possible for different processes to access the same shared memory region simultaneously, which is a critical requirement for the shared memory IPC method.
+A2: System calls are required for a shared memory method of inter-process communication (IPC), it is because shared memory involves a part of memory that is accessible by multiple processes. Without using system calls, it wouldn't be possible for different processes to access the same shared memory region at the same time, which is necessary for the shared memory IPC method.
 
-When a process wants to access shared memory, it needs to call the appropriate system call provided by the operating system to establish a shared memory segment that can be accessed by other processes. This system call creates a shared memory segment, maps it to the address space of the calling process, and returns a pointer to the starting address of the shared memory segment. Other processes that want to access the same shared memory segment also need to call the same system call to map the shared memory segment to their own address spaces.
+When a process wants to access shared memory, it has to use (call) an appropriate system call that is provided by the OS to establish a shared memory segment that later can be accessed by other processes. When a certain process calls a system call, it creates a space in memory that is shared between different parts of the program. This memory segment is mapped to the address space of the calling process, and the system call returns a pointer to the starting address of the shared memory. Other processes that want to access the created shared memory segment also need to call the same system call to map the shared memory to their own address spaces.
 
-In the case of multiple threads within a single process, system calls are not needed for sharing memory between those threads. Threads within the same process share the same address space, and therefore can access the same memory locations without any need for system calls. In fact, sharing memory between threads within the same process is often a more efficient IPC method than using system calls for inter-process communication, because it avoids the overhead of system call invocation and context switching.
+However, in case of multiple threads within a single process, system calls aren't needed for sharing memory between those threads. Threads within the same process share the same address space, and they can access the same memory locations without the use of system calls. It's actually often more efficient to share memory between threads within the same process instead of using system calls for inter-process communication. This is because using system calls involves additional overhead from invoking the system call and switching between different contexts, whereas sharing memory avoids these costs.
 
 
 
