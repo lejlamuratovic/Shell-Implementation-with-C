@@ -341,9 +341,10 @@ void execute_regular(char *input) {
     }
 
 
-    else {
-      // command not implemented
-      fprintf(stderr, "%s: command not found\n", args[0]);
+    else if (((strcmp(args[0], "wc") != 0) && (strcmp(args[0], "grep") != 0) && (strcmp(args[0], "df") != 0) && (strcmp(args[0], "cmatrix") != 0)))
+    {
+      execvp(args[0], args);
+      perror(args[0]);
     }
   } 
         
