@@ -76,20 +76,31 @@ void sys_execle() {
 void *child_fn(void *arg) {
     printf("Some example code running under child process.\n");
 
-    int i, space, k = 0;
-    int rows = 5;
 
-    for (i = 1; i <= rows; ++i, k = 0) {
-        for (space = 1; space <= rows - i; ++space) {
-            printf("  ");
-        }
-        while (k != 2 * i - 1) {
-            printf("* ");
-            ++k;
-      }
-      printf("\n");
-   }
-
+    printf("\n\n");
+    printf("\033[32m"); // set color to green
+    printf("\t\t\t⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠤⠐⠒⠂⠤⢄⡀⠀⠀⠀⠀\n");
+    printf("\t\t\t⠀⠀⠀⠀⠀⠀⡠⠖⠁⠀⠀⠀⠀⠀⠁⠢⡈⠲⣄⠀⠀\n");
+    printf("\t\t\t⠀⠀⠀⠀⠀⡜⠁⠀⢀⠁⠀⠀⠈⢁⠀⠔⠀⠄⠈⢦⠀\n");
+    printf("\t\t\t⠀⠀⠀⠀⠀⠁⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠈⡄\n");
+    printf("\t\t\t⠀⠀⠀⠀⠀⣦⡇⠀⠀⠀⠀⡀⡀⠀⠀⠀⠀⠀⢸⣴⠁\n");
+    printf("\t\t\t⠀⠀⠀⠀⠀⢹⡧⠄⠀⠀⢉⠐⠒⠀⡉⠁⠀⠢⢼⡇⠀\n");
+    printf("\t\t\t⠀⠀⠀⠀⠀⢸⢸⣟⠛⣿⣦⠑⠀⠊⣴⠿⣿⣿⡏⡇⠀\n");
+    printf("\t\t\t⠀⠀⠀⠀⠀⠘⢮⢻⣿⣿⣿⡇⠀⢸⣿⣾⣿⣟⡴⠁⠀\n");
+    printf("\t\t\t⡤⠄⠀⡖⢢⠀⠈⢳⡈⠙⠛⢁⠀⡈⠛⠋⣁⡞⠁⠀⠀\n");
+    printf("\t\t\t⠱⡸⡀⡕⡎⠀⠀⠀⠳⣄⠀⠉⠀⠉⠀⣠⠟⠀⠀⠀⠀\n");
+    printf("\t\t\t⠀⢣⢣⡇⡇⠀⠀⠀⠀⠈⢧⡀⠒⢈⡼⠁⠀⠀⠀⠀⠀\n");
+    printf("\t\t\t⢴⢺⣃⡒⠣⡀⠀⠀⠀⠀⠸⣿⠲⣿⠇⠀⠀⠀⠀⠀⠀\n");
+    printf("\t\t\t⠈⠣⡹⠉⢀⠃⠀⢀⣀⡠⠜⡙⣀⢛⠣⢄⣀⡀⠀⠀⠀\n");
+    printf("\t\t\t⠀⠀⠑⡏⣹⠀⢸⠇⢀⠀⠉⠀⣀⠀⠁⠀⡄⠸⡆⠀⠀\n");
+    printf("\t\t\t⠀⠀⠀⢁⠀⢇⡸⢀⣨⡀⠀⠀⢀⠀⠀⢀⣅⠀⡇⠀⠀\n");
+    printf("\t\t\t⠀⠀⠀⠸⡀⠈⠇⣸⠏⣇⠀⠀⠤⠀⠀⣸⡇⠀⠀⠀⠀\n");
+    printf("\t\t\t⠀⠀⠀⠸⡀⠈⠇⣸⠏⣇⠀⠀⠤⠀⠀⣸⡇⠀⠀⠀⠀\n");
+    printf("\t\t\t⠀⠀⠀⠀⣿⡀⢨⡟⠀⡗⠀⠀⢀⠀⠀⢺⡇⠀⠇⠀⠀\n");
+    printf("\t\t\t⠀⠀⠀⠀⠈⠺⡽⠁⠀⠧⠬⠤⠤⠄⠄⠸⢇⣄⠇⠀⠀\n");
+    printf("\n\n\n");
+    printf("\033[0m"); // reset color
+    
    exit(0);
 }
 
@@ -129,6 +140,7 @@ int main() {
     printf("\nChoose what you want to execute: ");
     scanf("%d", &choice);
     
+    printf("\033[0;33m"); // set color to yellow
     switch (choice) {
         case 1:
             printf("clone(): \n");
@@ -150,6 +162,7 @@ int main() {
             printf("Invalid choice\n");
             break;
     }
+    printf("\033[0m"); // reset color to default
 
     return 0;
 }
